@@ -65,21 +65,35 @@ contactForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Sending...';
     submitBtn.disabled = true;
     
-    // Simulate form submission (replace with actual API call)
-    setTimeout(() => {
-        // Log form data to console (in production, this would be sent to a server)
-        console.log('Form submitted:', formData);
+    // Submit form to Formspree
+    try {
+        const response = await fetch(contactForm.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
         
-        // Show success message
-        showMessage('Thank you for your message! We will get back to you soon.', 'success');
-        
-        // Reset form
-        contactForm.reset();
-        
+        if (response.ok) {
+            showMessage('Thank you for your message! We will get back to you soon.', 'success');
+            contactForm.reset();
+        } else {
+            const data = await response.json();
+            if (data.errors) {
+                showMessage(data.errors.map(error => error.message).join(', '), 'error');
+            } else {
+                showMessage('There was a problem sending your message. Please try again.', 'error');
+            }
+        }
+    } catch (error) {
+        showMessage('There was a problem sending your message. Please try again.', 'error');
+    } finally {
         // Reset button
         submitBtn.textContent = originalBtnText;
         submitBtn.disabled = false;
-    }, 1500);
+    }
 });
 
 function showMessage(message, type) {
