@@ -67,13 +67,21 @@ contactForm.addEventListener('submit', async (e) => {
     
     // Submit form to Formspree
     try {
+        // Create FormData object for Formspree
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('_replyto', formData.email); // Set reply-to address
+        formDataToSend.append('company', formData.company || '');
+        formDataToSend.append('subject', formData.subject);
+        formDataToSend.append('message', formData.message);
+        
         const response = await fetch(contactForm.action, {
             method: 'POST',
+            body: formDataToSend,
             headers: {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            }
         });
         
         if (response.ok) {
@@ -88,6 +96,7 @@ contactForm.addEventListener('submit', async (e) => {
             }
         }
     } catch (error) {
+        console.error('Form submission error:', error);
         showMessage('There was a problem sending your message. Please try again.', 'error');
     } finally {
         // Reset button
